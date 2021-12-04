@@ -16,6 +16,7 @@ if test -d $day
 end
 mkdir $day
 cp boilerplate.py $day/run.py
+touch $day/input_small.txt
 echo "cd to new directory $day"
 cd $day
 cdv . # activate virtualenv

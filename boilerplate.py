@@ -1,9 +1,9 @@
 import os
-import sys
 import shutil
-from itertools import *
+import sys
 from collections import *
 from copy import deepcopy
+from itertools import *
 
 # change to dir of script
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
