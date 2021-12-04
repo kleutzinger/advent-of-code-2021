@@ -46,6 +46,13 @@ def coords(arr2d):
             yield (x, y)
 
 
+
+def rotate2d(l):
+    "rotate a 2d list counter_clockwise once"
+    nu = deepcopy(l)
+    return list(zip(*nu))[::-1]
+
+
 def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
