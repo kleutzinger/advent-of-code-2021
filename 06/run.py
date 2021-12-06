@@ -30,100 +30,48 @@ def ans(answer):
         print(f"\t {answer} | (answer)\n")
 
 
-############### boilerplate ###################################################
-
-line_groups = data.split("\n\n")  # lines split by double newlines
-# line_groups = [l.strip() for l in line_groups]  # remove trailing newlines
-# print(lines)
-print(f"{len(lines)} lines in {input_file}\n")
-
-
-def coords(arr2d):
-    # return [(x0,y0), (x1, y0), ...]
-    for y in range(len(arr2d)):
-        for x in range(len(arr2d[y])):
-            yield (x, y)
-
-
-def rotate2d(l):
-    "rotate a 2d list counter_clockwise once"
-    nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
-
-
-def powerset(iterable):
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-
-
-strips = lambda l: list(map(str.strip, l))
-ints = lambda l: list(map(int, l))
-commas = lambda s: s.split(",")
-comma_ints = lambda s: ints(strips(s.split(",")))
-
-L, I, D, S = list, int, dict, set
-P, E, R, M = print, enumerate, range, map
-
 ############### end of boilerplate ############################################
 
 
 ### PART 1 ###
 
 
-def line_transform(line):
-    "I run on each line of the input"
-    # split = [line.split() for line in lines]
-    # return int(line)
-    return comma_ints(line)
-
-
-lines = [line_transform(line) for line in lines]
-
-
-def gen(nums):
-    nu_nums = []
-    for num in nums:
-        if num == 0:
-            nu_nums.append(6)
-            nu_nums.append(8)
-        else:
-            nu_nums.append(num - 1)
-    return nu_nums
+def count_fish(nums=[], generations=80):
+    """
+    given a list of integers, find how many fish there are after X generations
+    """
+    fish = Counter(nums)
+    for gen in range(generations):
+        if "v" in sys.argv:
+            print(gen, [(x, fish[x]) for x in range(9)])
+        nu_fish = Counter()
+        for idx in range(9):
+            cur_count = fish[idx]
+            if idx == 0:
+                # spawn new fish
+                nu_fish[8] += cur_count
+                nu_fish[6] += cur_count
+            else:
+                # each fish -= 1 day
+                nu_fish[idx - 1] += cur_count
+        fish = nu_fish
+    return sum(fish.values())
 
 
 def part1(nums):
-    tot = 0
-    nums = lines[0].copy()
-    for d in range(80):
-        nums = gen(nums)
-    return len(nums)
+    return count_fish(nums, generations=80)
 
 
 ### PART 2 ###
 
 
-def gen2(nums, gens=256):
-    fish = Counter(nums)
-    for gen in range(gens):
-        # print(gen, [(x, fish[x]) for x in range(9)])
-        nu_fish = Counter()
-        for idx in range(9):
-            fish_count = fish[idx]
-            if idx == 0:
-                nu_fish[8] += fish[0]
-                nu_fish[6] += fish[0]
-            else:
-                nu_fish[idx - 1] += fish_count
-        fish = nu_fish
-    return sum(fish.values())
-
-
-def part2(lines):
-    return gen2(lines[0])
+def part2(nums):
+    return count_fish(nums, generations=256)
 
 
 if __name__ == "__main__":
-    p1_ans = part1(deepcopy(lines))
+    nums = [int(i) for i in lines[0].split(",")]
+    p1_ans = part1(nums)
     ans(p1_ans)  # 26984457539
-    p2_ans = part2(deepcopy(lines))
+    p2_ans = part2(nums)
     ans(p2_ans)  # 1741362314973
