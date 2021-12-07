@@ -36,42 +36,38 @@ def ans(answer):
 ### PART 1 ###
 
 
-def pos_moves(nums, p):
+def pos_moves(nums, goal):
+    "how far is each num from goal in total?"
     moves = 0
     for num in nums:
-        moves += abs(p - num)
+        moves += abs(goal - num)
     return moves
 
 
 def part1(nums):
+    "check every possible position in the range of positions. take min"
     return min([pos_moves(nums, m) for m in range(min(nums), max(nums) + 1)])
 
 
-def pos_moves2(nums, p):
-    moves = 0
+### PART 2 ###
 
-    def sgn(a, b):
-        if a == b:
-            return 0
-        if a < b:
-            return 1
-        else:
-            return -1
 
+def pos_moves2(nums, goal):
+    "moving now has a different cost to p (triangular number cost)"
+
+    def tri(n):
+        "triangular number"
+        return int((n * (n + 1)) / 2)
+
+    fuel = 0
     for num in nums:
-        cost = 1
-        while num != p:
-            num += sgn(num, p)
-            moves += cost
-            cost += 1
-    return moves
+        fuel += tri(abs(goal - num))
+    return fuel
 
 
 def part2(nums):
+    "check every possible position in the range of positions. take min"
     return min([pos_moves2(nums, m) for m in range(min(nums), max(nums) + 1)])
-
-
-### PART 2 ###
 
 
 if __name__ == "__main__":
