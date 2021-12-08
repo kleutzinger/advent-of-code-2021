@@ -45,7 +45,6 @@ def coords(arr2d):
             yield (x, y)
 
 
-
 def rotate2d(l):
     "rotate a 2d list counter_clockwise once"
     nu = deepcopy(l)
@@ -77,12 +76,22 @@ def line_transform(line):
     # return int(line)
     return line
 
+
 lines = [line_transform(line) for line in lines]
 
-def part1(lines):
+if len(lines):
+    l = lines[0]
+
+try:
+    nums = [int(i.strip()) for i in lines[0]]
+except:
+    pass
+
+
+def part1(data):
     tot = 0
-    for idx, line in enumerate(lines):
-        if line:
+    for idx, d in enumerate(data):
+        if d:
             tot += 1
     return tot
 
@@ -95,7 +104,6 @@ def part2(lines):
 
 
 if __name__ == "__main__":
-    p1_ans = part1(deepcopy(lines))
-    ans(p1_ans)
+    ans(part1(deepcopy(data)))
     # p2_ans = part2(deepcopy(lines))
     # ans(p2_ans)
