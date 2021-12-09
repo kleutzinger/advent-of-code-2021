@@ -30,14 +30,6 @@ def ans(answer):
         print(f"\t {answer} | (answer)\n")
 
 
-############### boilerplate ###################################################
-
-line_groups = data.split("\n\n")  # lines split by double newlines
-# line_groups = [l.strip() for l in line_groups]  # remove trailing newlines
-# print(lines)
-print(f"{len(lines)} lines in {input_file}\n")
-
-
 def coords(arr2d):
     # return [(x0,y0), (x1, y0), ...]
     for y in range(len(arr2d)):
@@ -45,76 +37,92 @@ def coords(arr2d):
             yield (x, y)
 
 
-def rotate2d(l):
-    "rotate a 2d list counter_clockwise once"
-    nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
-
-
-def powerset(iterable):
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-
-
-strips = lambda l: list(map(str.strip, l))
-ints = lambda l: list(map(int, l))
-commas = lambda s: s.split(",")
-comma_ints = lambda s: ints(strips(s.split(",")))
-
-L, I, D, S = list, int, dict, set
-P, E, R, M = print, enumerate, range, map
-
 ############### end of boilerplate ############################################
 
 
 ### PART 1 ###
 
 
-def line_transform(line):
-    "I run on each line of the input"
-    # split = [line.split() for line in lines]
-    # return int(line)
-    
-    return line
+def show2d(board, coord, seen):
+    for y in range(len(board)):
+        for x in range(len(board[0])):
+            draw_cell = (x, y)
+            if draw_cell == coord:
+                print("X", end="")
+            elif draw_cell in seen:
+                print("·", end="")
+            else:
+                print(board[y][x], end="")
+        print()
+    if coord:
+        print(f"\n X = {board[coord[1]][coord[0]]}")
 
 
-def part1(data):
-    tot = 0
+def part12(data):
+    # build board
     board = []
-    for line in data.strip().split('\n'):
+    for line in data.strip().split("\n"):
         row = []
         for c in line.strip():
             row.append(int(c))
-            print(c)
         board.append(row)
+
     def neighbors(coord):
         x, y = coord
-        for dx, dy in [(0,1), (1,0), (-1,0), (0,-1)]:
-            yield (x+dx, y+dy)
+        for dx, dy in [(0, 1), (1, 0), (-1, 0), (0, -1)]:
+            nx, ny = x + dx, y + dy
+            if (0 <= nx < len(board[0])) and (0 <= ny < len(board)):
+                yield (nx, ny)
+
     risk = 0
+    basins = []
     for x, y in coords(board):
-        for nx, ny in neighbors((x,y)):
-            pass
+        for nx, ny in neighbors((x, y)):
             cur = board[y][x]
-            try:
-                friend = board[ny][nx]
-            except:
-                continue
+            friend = board[ny][nx]
             if cur >= friend:
                 break
         else:
+            basins.append((x, y))
             risk += 1 + cur
-        pass
-    return risk
+    ans(risk)  # 480
 
-### PART 2 ###
+    ### PART 2 ###
 
+    print(f"basins: {len(basins)}")
 
-def part2(lines):
-    pass
+    def dfs(coord):
+        nonlocal seen
+        # show2d(board, coord, seen)
+        x, y = coord
+        nbs = []
+        for nx, ny in neighbors(coord):
+            nval = board[ny][nx]
+            val = board[y][x]
+            if ((nx, ny) not in seen) and (nval > val) and (nval < 9):
+                nbs.append((nx, ny))
+                seen.add((nx, ny))
+        seen.add(coord)
+        global_seen.add(coord)
+        return 1 + sum([dfs(i) for i in nbs])
+
+    global_seen = set()  # for printing big board
+    sizes = []
+    for low_point in basins:
+        seen = set()
+        basin_size = dfs(low_point)
+        sizes.append(basin_size)
+
+    if "v" in sys.argv:
+        show2d(board, None, global_seen)
+
+    out = 1
+    # could use reduce here
+    for s in sorted(sizes, reverse=True)[:3]:
+        out *= s
+    ans(out)  # 1045660
+    return
 
 
 if __name__ == "__main__":
-    ans(part1(deepcopy(data)))
-    # p2_ans = part2(deepcopy(lines))
-    # ans(p2_ans)
+    part12(data)
