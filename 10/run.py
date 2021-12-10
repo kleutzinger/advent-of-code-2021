@@ -30,80 +30,20 @@ def ans(answer):
         print(f"\t {answer} | (answer)\n")
 
 
-############### boilerplate ###################################################
-
-line_groups = data.split("\n\n")  # lines split by double newlines
-# line_groups = [l.strip() for l in line_groups]  # remove trailing newlines
-# print(lines)
-print(f"{len(lines)} lines in {input_file}\n")
+### PART 1 and 2 ###
 
 
-def coords(arr2d):
-    # return [(x0,y0), (x1, y0), ...]
-    for y in range(len(arr2d)):
-        for x in range(len(arr2d[y])):
-            yield (x, y)
-
-
-def rotate2d(l):
-    "rotate a 2d list counter_clockwise once"
-    nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
-
-
-def powerset(iterable):
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-
-
-strips = lambda l: list(map(str.strip, l))
-ints = lambda l: list(map(int, l))
-commas = lambda s: s.split(",")
-comma_ints = lambda s: ints(strips(s.split(",")))
-
-L, I, D, S = list, int, dict, set
-P, E, R, M = print, enumerate, range, map
-
-############### end of boilerplate ############################################
-
-
-### PART 1 ###
-
-
-def line_transform(line):
-    "I run on each line of the input"
-    # split = [line.split() for line in lines]
-    # return int(line)
-    return [c for c in line]
-
-
-lines = [line_transform(line) for line in lines]
-
-if len(lines):
-    l = lines[0]
-
-try:
-    nums = [int(i.strip()) for i in lines[0]]
-except:
-    pass
-
-
-def part1(data):
+def part12(data):
     tot = 0
-    m = {
-        '}': '{',
-        ')': '(',
-        '>': '<',
-        ']': '['
-    }
+    m = {"}": "{", ")": "(", ">": "<", "]": "["}
     points = {
-        ")": 3 ,
+        ")": 3,
         "]": 57,
         "}": 1197,
         ">": 25137,
     }
     points2 = {
-        "(": 1 ,
+        "(": 1,
         "[": 2,
         "{": 3,
         "<": 4,
@@ -123,31 +63,22 @@ def part1(data):
                 print(c, top)
                 if top != m[c]:
                     tot += points[c]
-                    print(idx, 'error', c, top)
-                    print('brioke')
+                    print(idx, "error", c, top)
                     break
             else:
                 stack.append(c)
         else:
-            print('SS', stack)
+            print("SS", stack)
             for s in reversed(stack):
                 tot2 *= 5
                 tot2 += points2[s]
             tot2s.append(tot2)
-            print('adddd', stack, tot2)
-            print(idx, 'no error')
+            print(idx, "no error")
     tot2s.sort()
-    return tot2s[len(tot2s)//2]
-
-
-### PART 2 ###
-
-
-def part2(lines):
-    pass
+    ans(tot)  # 392139
+    ans(tot2s[len(tot2s) // 2])  # 4001832844
 
 
 if __name__ == "__main__":
-    ans(part1(deepcopy(lines)))
-    # p2_ans = part2(deepcopy(lines))
-    # ans(p2_ans)
+    lines = [[c for c in line] for line in lines]
+    part12(lines)
