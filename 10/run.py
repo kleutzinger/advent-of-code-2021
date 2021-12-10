@@ -102,10 +102,19 @@ def part1(data):
         "}": 1197,
         ">": 25137,
     }
+    points2 = {
+        "(": 1 ,
+        "[": 2,
+        "{": 3,
+        "<": 4,
+    }
+
     starts = m.values()
     ends = m.keys()
     tot = 0
+    tot2s = []
     for idx, line in enumerate(data):
+        tot2 = 0
         print(line)
         stack = []
         for c in line:
@@ -120,8 +129,15 @@ def part1(data):
             else:
                 stack.append(c)
         else:
+            print('SS', stack)
+            for s in reversed(stack):
+                tot2 *= 5
+                tot2 += points2[s]
+            tot2s.append(tot2)
+            print('adddd', stack, tot2)
             print(idx, 'no error')
-    return tot
+    tot2s.sort()
+    return tot2s[len(tot2s)//2]
 
 
 ### PART 2 ###
