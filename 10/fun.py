@@ -3,9 +3,8 @@ def match(c):
     return the matching char
         [(<{  ->  ])>}
     """
-    for pair in [set(s) for s in ["()", "[]", "{}", "<>"]]:
-        if c in pair:
-            return (pair - set([c])).pop()
+    chrs = "[{(<>)}]"
+    return dict(zip(chrs, reversed(chrs))).get(c)
 
 
 for a, b in ["<>", "[]", "{}", "()"]:

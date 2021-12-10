@@ -92,7 +92,7 @@ def part12(data):
     print(f"basins: {len(basins)}")
 
     def dfs(coord):
-        nonlocal seen
+        # nonlocal seen
         # show2d(board, coord, seen)
         x, y = coord
         nbs = []
