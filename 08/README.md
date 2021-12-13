@@ -1,78 +1,136 @@
-# Day 9: Smoke Basin
+# Day 8: Seven Segment Search
 
-[https://adventofcode.com/2021/day/9](https://adventofcode.com/2021/day/9)
+[https://adventofcode.com/2021/day/8](https://adventofcode.com/2021/day/8)
 
 ## Description
 
 ### Part One
 
-These caves seem to be [lava tubes](https://en.wikipedia.org/wiki/Lava_tube). Parts are even still volcanically active; small hydrothermal vents release smoke into the caves that slowly <span title="This was originally going to be a puzzle about watersheds, but we're already under water.">settles like rain</span>.
+You barely reach the safety of the cave when the whale smashes into the cave mouth, collapsing it. Sensors indicate another exit to this cave at a much greater depth, so you have no choice but to press on.
 
-If you can model how the smoke flows through the caves, you might be able to avoid it and be that much safer. The submarine generates a heightmap of the floor of the nearby caves for you (your puzzle input).
+As your submarine slowly makes its way through the cave system, you notice that the four-digit [seven-segment displays](https://en.wikipedia.org/wiki/Seven-segment_display) in your submarine are malfunctioning; <span title="Yes, just the four-digit seven-segment ones. Whole batch must have been faulty.">they must have been damaged</span> during the escape. You'll be in a lot of trouble without them, so you'd better figure out what's wrong.
 
-Smoke flows to the lowest point of the area it's in. For example, consider the following heightmap:
+Each digit of a seven-segment display is rendered by turning on or off any of seven segments named `a` through `g`:
 
-    2199943210
-    3987894921
-    9856789892
-    8767896789
-    9899965678
+      0:      1:      2:      3:      4:
+     aaaa    ....    aaaa    aaaa    ....
+    b    c  .    c  .    c  .    c  b    c
+    b    c  .    c  .    c  .    c  b    c
+     ....    ....    dddd    dddd    dddd
+    e    f  .    f  e    .  .    f  .    f
+    e    f  .    f  e    .  .    f  .    f
+     gggg    ....    gggg    gggg    ....
+    
+      5:      6:      7:      8:      9:
+     aaaa    aaaa    aaaa    aaaa    aaaa
+    b    .  b    .  .    c  b    c  b    c
+    b    .  b    .  .    c  b    c  b    c
+     dddd    dddd    ....    dddd    dddd
+    .    f  e    f  .    f  e    f  .    f
+    .    f  e    f  .    f  e    f  .    f
+     gggg    gggg    ....    gggg    gggg
     
 
-Each number corresponds to the height of a particular location, where `9` is the highest and `0` is the lowest a location can be.
+So, to render a `1`, only segments `c` and `f` would be turned on; the rest would be off. To render a `7`, only segments `a`, `c`, and `f` would be turned on.
 
-Your first goal is to find the _low points_ - the locations that are lower than any of its adjacent locations. Most locations have four adjacent locations (up, down, left, and right); locations on the edge or corner of the map have three or two adjacent locations, respectively. (Diagonal locations do not count as adjacent.)
+The problem is that the signals which control the segments have been mixed up on each display. The submarine is still trying to display numbers by producing output on signal wires `a` through `g`, but those wires are connected to segments _randomly_. Worse, the wire/segment connections are mixed up separately for each four-digit display! (All of the digits _within_ a display use the same connections, though.)
 
-In the above example, there are _four_ low points, all highlighted: two are in the first row (a `1` and a `0`), one is in the third row (a `5`), and one is in the bottom row (also a `5`). All other locations on the heightmap have some lower adjacent location, and so are not low points.
+So, you might know that only signal wires `b` and `g` are turned on, but that doesn't mean _segments_ `b` and `g` are turned on: the only digit that uses two segments is `1`, so it must mean segments `c` and `f` are meant to be on. With just that information, you still can't tell which wire (`b`/`g`) goes to which segment (`c`/`f`). For that, you'll need to collect more information.
 
-The _risk level_ of a low point is _1 plus its height_. In the above example, the risk levels of the low points are `2`, `1`, `6`, and `6`. The sum of the risk levels of all low points in the heightmap is therefore _`15`_.
+For each display, you watch the changing signals for a while, make a note of _all ten unique signal patterns_ you see, and then write down a single _four digit output value_ (your puzzle input). Using the signal patterns, you should be able to work out which pattern corresponds to which digit.
 
-Find all of the low points on your heightmap. _What is the sum of the risk levels of all low points on your heightmap?_
+For example, here is what you might see in a single entry in your notes:
+
+    acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
+    cdfeb fcadb cdfeb cdbaf
+
+(The entry is wrapped here to two lines so it fits; in your notes, it will all be on a single line.)
+
+Each entry consists of ten _unique signal patterns_, a `|` delimiter, and finally the _four digit output value_. Within an entry, the same wire/segment connections are used (but you don't know what the connections actually are). The unique signal patterns correspond to the ten different ways the submarine tries to render a digit using the current wire/segment connections. Because `7` is the only digit that uses three segments, `dab` in the above example means that to render a `7`, signal lines `d`, `a`, and `b` are on. Because `4` is the only digit that uses four segments, `eafb` means that to render a `4`, signal lines `e`, `a`, `f`, and `b` are on.
+
+Using this information, you should be able to work out which combination of signal wires corresponds to each of the ten digits. Then, you can decode the four digit output value. Unfortunately, in the above example, all of the digits in the output value (`cdfeb fcadb cdfeb cdbaf`) use five segments and are more difficult to deduce.
+
+For now, _focus on the easy digits_. Consider this larger example:
+
+    be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb |
+    fdgacbe cefdb cefbgd gcbe
+    edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec |
+    fcgedb cgb dgebacf gc
+    fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef |
+    cg cg fdcagb cbg
+    fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega |
+    efabcd cedba gadfec cb
+    aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga |
+    gecf egdcabf bgf bfgea
+    fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf |
+    gebdcfa ecba ca fadegcb
+    dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf |
+    cefg dcbef fcge gbcadfe
+    bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd |
+    ed bcgafe cdgba cbgef
+    egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg |
+    gbdfcae bgc cg cgb
+    gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc |
+    fgae cfgab fg bagce
+    
+
+Because the digits `1`, `4`, `7`, and `8` each use a unique number of segments, you should be able to tell which combinations of signals correspond to those digits. Counting _only digits in the output values_ (the part after `|` on each line), in the above example, there are _`26`_ instances of digits that use a unique number of segments (highlighted above).
+
+_In the output values, how many times do digits `1`, `4`, `7`, or `8` appear?_
 
 ### Part Two
 
-Next, you need to find the largest basins so you know what areas are most important to avoid.
+Through a little deduction, you should now be able to determine the remaining digits. Consider again the first example above:
 
-A _basin_ is all locations that eventually flow downward to a single low point. Therefore, every low point has a basin, although some basins are very small. Locations of height `9` do not count as being in any basin, and all other locations will always be part of exactly one basin.
+    acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
+    cdfeb fcadb cdfeb cdbaf
 
-The _size_ of a basin is the number of locations within the basin, including the low point. The example above has four basins.
+After some careful analysis, the mapping between signal wires and segments only make sense in the following configuration:
 
-The top-left basin, size `3`:
-
-    2199943210
-    3987894921
-    9856789892
-    8767896789
-    9899965678
+     dddd
+    e    a
+    e    a
+     ffff
+    g    b
+    g    b
+     cccc
     
 
-The top-right basin, size `9`:
+So, the unique signal patterns would correspond to the following digits:
 
-    2199943210
-    3987894921
-    9856789892
-    8767896789
-    9899965678
-    
+*   `acedgfb`: `8`
+*   `cdfbe`: `5`
+*   `gcdfa`: `2`
+*   `fbcad`: `3`
+*   `dab`: `7`
+*   `cefabd`: `9`
+*   `cdfgeb`: `6`
+*   `eafb`: `4`
+*   `cagedb`: `0`
+*   `ab`: `1`
 
-The middle basin, size `14`:
+Then, the four digits of the output value can be decoded:
 
-    2199943210
-    3987894921
-    9856789892
-    8767896789
-    9899965678
-    
+*   `cdfeb`: _`5`_
+*   `fcadb`: _`3`_
+*   `cdfeb`: _`5`_
+*   `cdbaf`: _`3`_
 
-The bottom-right basin, size `9`:
+Therefore, the output value for this entry is _`5353`_.
 
-    2199943210
-    3987894921
-    9856789892
-    8767896789
-    9899965678
-    
+Following this same process for each entry in the second, larger example above, the output value of each entry can be determined:
 
-Find the three largest basins and multiply their sizes together. In the above example, this is `9 * 14 * 9 = 1134`.
+*   `fdgacbe cefdb cefbgd gcbe`: `8394`
+*   `fcgedb cgb dgebacf gc`: `9781`
+*   `cg cg fdcagb cbg`: `1197`
+*   `efabcd cedba gadfec cb`: `9361`
+*   `gecf egdcabf bgf bfgea`: `4873`
+*   `gebdcfa ecba ca fadegcb`: `8418`
+*   `cefg dcbef fcge gbcadfe`: `4548`
+*   `ed bcgafe cdgba cbgef`: `1625`
+*   `gbdfcae bgc cg cgb`: `8717`
+*   `fgae cfgab fg bagce`: `4315`
 
-_What do you get if you multiply together the sizes of the three largest basins?_
+Adding all of the output values in this larger example produces _`61229`_.
+
+For each entry, determine all of the wire/segment connections and decode the four-digit output values. _What do you get if you add up all of the output values?_
