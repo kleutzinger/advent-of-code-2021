@@ -30,62 +30,14 @@ def ans(answer):
         print(f"\t {answer} | (answer)\n")
 
 
-############### boilerplate ###################################################
-
 line_groups = data.split("\n\n")  # lines split by double newlines
 # line_groups = [l.strip() for l in line_groups]  # remove trailing newlines
 # print(lines)
 print(f"{len(lines)} lines in {input_file}\n")
 
-
-def coords(arr2d):
-    # return [(x0,y0), (x1, y0), ...]
-    for y in range(len(arr2d)):
-        for x in range(len(arr2d[y])):
-            yield (x, y)
-
-
-def rotate2d(l):
-    "rotate a 2d list counter_clockwise once"
-    nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
-
-
-def powerset(iterable):
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-
-
-strips = lambda l: list(map(str.strip, l))
-ints = lambda l: list(map(int, l))
-commas = lambda s: s.split(",")
-comma_ints = lambda s: ints(strips(s.split(",")))
-
-L, I, D, S = list, int, dict, set
-P, E, R, M = print, enumerate, range, map
-
 ############### end of boilerplate ############################################
 
-
-### PART 1 ###
-
-
-def line_transform(line):
-    "I run on each line of the input"
-    # split = [line.split() for line in lines]
-    # return int(line)
-    return line
-
-
-lines = [line_transform(line) for line in lines]
-
-if len(lines):
-    l = lines[0]
-
-try:
-    nums = [int(i.strip()) for i in lines[0]]
-except:
-    pass
+### PART 1 and 2 ###
 
 
 def max_dims(board):
@@ -95,9 +47,22 @@ def max_dims(board):
     return maxx, maxy
 
 
+def show2d(board):
+    max_x, max_y = max_dims(board)
+    for y in range(max_y + 1):
+        for x in range(max_x + 1):
+            draw_cell = (x, y)
+            if board[draw_cell]:
+                print("█", end="")
+            else:
+                print(" ", end="")
+        print()
+
+
 def do_fold(board, fold):
     axis, pivot = fold
     max_x, max_y = max_dims(board)
+    nu_board = defaultdict(bool)
     if axis == "y":
         """
         0110
@@ -106,12 +71,11 @@ def do_fold(board, fold):
         0000
         0111
         """
-        nu_board = defaultdict(bool)
         for dy in range(0, pivot + 1):
-            below_y, above_y = pivot - dy, pivot + dy
-            for c in range(max_x + 1):
-                if board[(c, below_y)] or board[(c, above_y)]:
-                    nu_board[(c, above_y)] = True
+            below_y, above_y = pivot + dy, pivot - dy
+            for y in range(max_x + 1):
+                if board[(y, below_y)] or board[(y, above_y)]:
+                    nu_board[(y, above_y)] = True
         print(len(nu_board.items()))
         return nu_board
     elif axis == "x":
@@ -124,17 +88,14 @@ def do_fold(board, fold):
         nu_board = defaultdict(bool)
         for dx in range(0, pivot + 1):
             left_x, right_x = pivot - dx, pivot + dx
-            for c in range(max_y + 1):
-                if board[(left_x, c)] or board[(right_x, c)]:
-                    nu_board[(left_x, c)] = True
+            for y in range(max_y + 1):
+                if board[(left_x, y)] or board[(right_x, y)]:
+                    nu_board[(left_x, y)] = True
         print(len(nu_board.items()))
         return nu_board
 
 
-from pprint import pprint
-
-
-def part1(data):
+def part12():
     coord_lines, fold_lines = line_groups
     dots = []
     for coord_line in coord_lines.split("\n"):
@@ -151,11 +112,22 @@ def part1(data):
     for coord in dots:
         board[coord] = True
 
+    show2d(board)
     for fold in folds:
-        board = do_fold(board, fold)  # 720
+        board = do_fold(board, fold)  # 720 (part 1)
+        show2d(board)
+    # AHPRPAUZ (part 2)
+
+
+"""
+ ██  █  █ ███  ███  ███   ██  █  █ ████
+█  █ █  █ █  █ █  █ █  █ █  █ █  █    █
+█  █ ████ █  █ █  █ █  █ █  █ █  █   █ 
+████ █  █ ███  ███  ███  ████ █  █  █  
+█  █ █  █ █    █ █  █    █  █ █  █ █   
+█  █ █  █ █    █  █ █    █  █  ██  ████
+"""
 
 
 if __name__ == "__main__":
-    ans(part1(deepcopy(data)))
-    # p2_ans = part2(deepcopy(lines))
-    # ans(p2_ans)
+    part12()
