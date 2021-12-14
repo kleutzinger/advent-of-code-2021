@@ -87,6 +87,17 @@ try:
 except:
     pass
 
+
+def pair_counts(temp):
+    counts = Counter()
+    for idx in range(len(temp) - 1):
+        pair = temp[idx] + temp[idx + 1]
+        counts[pair] += 1
+    # counts[pair[1]+temp[-1]] += 1
+    print(temp, counts)
+    return counts
+
+
 def round(temp, rules):
     nu_temp = ""
     for idx in range(len(temp) - 1):
@@ -95,22 +106,46 @@ def round(temp, rules):
     return nu_temp + pair[1]
 
 
+def round2(counts, rules, global_counter):
+    nu_count = Counter()
+    for pair, count in counts.items():
+        nu_chr = rules[pair]
+        global_counter[nu_chr] += count
+        left = pair[0] + nu_chr
+        right = nu_chr + pair[1]
+        nu_count[left] += count
+        nu_count[right] += count
+    return nu_count, global_counter
+
 
 def part1(data):
     temp, ins = line_groups
     temp = temp.strip().splitlines()[0]
     ins = ins.strip().splitlines()
-    ins = [i.split(' -> ') for i in ins]
+    ins = [i.split(" -> ") for i in ins]
     rules = dict()
     for pair, chr in ins:
         rules[pair] = chr
     print(temp)
-    for r in range(10):
-        temp = round(temp, rules)
-        print(temp)
-    c = list(Counter(temp).most_common())
+    print(pair_counts(temp))
+    temp2 = pair_counts(temp)
+    global_counter = Counter(temp)
+    for r in range(40):
+        # temp = round(temp, rules)
+        temp2, global_counter = round2(temp2, rules, global_counter)
+        print("global", global_counter)
+        print(r)
+        print(temp2)
+        # print(pair_counts(temp))
+    # pt 2 not 1290200791356
+    c = list(temp2.most_common())
     print(c[0], c[-1])
     print(c[0][1] - c[-1][1])
+
+    c = list(global_counter.most_common())
+    print("part2:", c[0], c[-1])
+    ans(c[0][1] - c[-1][1])
+    # p2 not 3064796036668
 
 
 if __name__ == "__main__":
