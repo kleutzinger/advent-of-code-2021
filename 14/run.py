@@ -30,125 +30,77 @@ def ans(answer):
         print(f"\t {answer} | (answer)\n")
 
 
-############### boilerplate ###################################################
+############### end of boilerplate ###################################################
 
-line_groups = data.split("\n\n")  # lines split by double newlines
-# line_groups = [l.strip() for l in line_groups]  # remove trailing newlines
-# print(lines)
+line_groups = data.split("\n\n")
 print(f"{len(lines)} lines in {input_file}\n")
 
 
-def coords(arr2d):
-    # return [(x0,y0), (x1, y0), ...]
-    for y in range(len(arr2d)):
-        for x in range(len(arr2d[y])):
-            yield (x, y)
-
-
-def rotate2d(l):
-    "rotate a 2d list counter_clockwise once"
-    nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
-
-
-def powerset(iterable):
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-
-
-strips = lambda l: list(map(str.strip, l))
-ints = lambda l: list(map(int, l))
-commas = lambda s: s.split(",")
-comma_ints = lambda s: ints(strips(s.split(",")))
-
-L, I, D, S = list, int, dict, set
-P, E, R, M = print, enumerate, range, map
-
-############### end of boilerplate ############################################
-
-
-### PART 1 ###
-
-
-def line_transform(line):
-    "I run on each line of the input"
-    # split = [line.split() for line in lines]
-    # return int(line)
-    return line
-
-
-lines = [line_transform(line) for line in lines]
-
-if len(lines):
-    l = lines[0]
-
-try:
-    nums = [int(i.strip()) for i in lines[0]]
-except:
-    pass
-
-
-def pair_counts(temp):
+def count_pairs(string):
     counts = Counter()
-    for idx in range(len(temp) - 1):
-        pair = temp[idx] + temp[idx + 1]
+    for idx in range(len(string) - 1):
+        pair = string[idx] + string[idx + 1]
         counts[pair] += 1
-    # counts[pair[1]+temp[-1]] += 1
-    print(temp, counts)
     return counts
 
 
-def round(temp, rules):
-    nu_temp = ""
-    for idx in range(len(temp) - 1):
-        pair = temp[idx] + temp[idx + 1]
-        nu_temp += pair[0] + rules[pair]
-    return nu_temp + pair[1]
+def insert_slow(string, rules):
+    """
+    the slow way I originally did it, which operated on strings.
+    "NNCB" -> "NCNBHB"
+    """
+    nu_str = ""
+    for idx in range(len(string) - 1):
+        pair = string[idx] + string[idx + 1]
+        nu_str += pair[0] + rules[pair]
+    return nu_str + pair[1]
 
 
-def round2(counts, rules, global_counter):
-    nu_count = Counter()
-    for pair, count in counts.items():
+def insert(pair_counts, rules, char_counter):
+    """
+    here we have a pair_counts where we keep track of the frequency of pairs
+    in the polymer. {NN: 1, NC: 4, ...}
+
+    and the global amounts of each individual character {N: 5, B: 200, ...}
+    """
+    next_pair_counts = Counter()
+    for pair, cur_pair_count in pair_counts.items():
         nu_chr = rules[pair]
-        global_counter[nu_chr] += count
-        left = pair[0] + nu_chr
-        right = nu_chr + pair[1]
-        nu_count[left] += count
-        nu_count[right] += count
-    return nu_count, global_counter
+        # we have the pair frequency. so we're adding that many nu_chr
+        char_counter[nu_chr] += cur_pair_count
+        # add to left pair _N
+        next_pair_counts[pair[0] + nu_chr] += cur_pair_count
+        # add to right pair N_
+        next_pair_counts[nu_chr + pair[1]] += cur_pair_count
+    return next_pair_counts, char_counter
 
 
-def part1(data):
-    temp, ins = line_groups
-    temp = temp.strip().splitlines()[0]
-    ins = ins.strip().splitlines()
-    ins = [i.split(" -> ") for i in ins]
-    rules = dict()
-    for pair, chr in ins:
-        rules[pair] = chr
-    print(temp)
-    print(pair_counts(temp))
-    temp2 = pair_counts(temp)
-    global_counter = Counter(temp)
-    for r in range(40):
-        # temp = round(temp, rules)
-        temp2, global_counter = round2(temp2, rules, global_counter)
-        print("global", global_counter)
-        print(r)
-        print(temp2)
-        # print(pair_counts(temp))
-    # pt 2 not 1290200791356
-    c = list(temp2.most_common())
-    print(c[0], c[-1])
-    print(c[0][1] - c[-1][1])
+def most_minus_least(char_counter):
+    """
+    we take the count of individual characters subtract the least common from
+    the most common
+    """
+    freqs = list(char_counter.most_common())
+    most, least = freqs[0], freqs[-1]
+    print(f"{most=}, {least=}")
+    return most[1] - least[1]
 
-    c = list(global_counter.most_common())
-    print("part2:", c[0], c[-1])
-    ans(c[0][1] - c[-1][1])
-    # p2 not 3064796036668
+
+def part12():
+    polymer, insertions = line_groups
+    polymer = polymer.strip().splitlines()[0]
+    insertions = [i.split(" -> ") for i in insertions.strip().splitlines()]
+    rules = {pair: nu_chr for pair, nu_chr in insertions}
+    pair_counts = count_pairs(polymer)
+    char_counter = Counter(polymer)
+    for round in range(40):
+        pair_counts, char_counter = insert(pair_counts, rules, char_counter)
+        if round == 9:
+            print("part 1:")
+            ans(most_minus_least(char_counter))  # 2657
+    print("part 2:")
+    ans(most_minus_least(char_counter))  # 2911561572630
 
 
 if __name__ == "__main__":
-    part1(data)
-    # p2_ans = part2(deepcopy(lines))
-    # ans(p2_ans)
+    part12()
