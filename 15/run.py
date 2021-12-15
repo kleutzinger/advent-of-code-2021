@@ -45,7 +45,7 @@ def coords(arr2d):
 def rotate2d(l):
     "rotate a 2d list counter_clockwise once"
     nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
+    return "".join(list(zip(*nu))[::-1])
 
 
 def powerset(iterable):
@@ -63,7 +63,21 @@ P, E, R, M = print, enumerate, range, map
 
 ############### end of boilerplate ############################################
 
-ref_big = """11637517422274862853338597396444961841755517295286
+
+ref_small = """\
+1163751742
+1381373672
+2136511328
+3694931569
+7463417111
+1319128137
+1359912421
+3125421639
+1293138521
+2311944581"""
+
+ref_big = """\
+11637517422274862853338597396444961841755517295286
 13813736722492484783351359589446246169155735727126
 21365113283247622439435873354154698446526571955763
 36949315694715142671582625378269373648937148475914
@@ -112,14 +126,76 @@ ref_big = """11637517422274862853338597396444961841755517295286
 57944568656815567976792667818781377892989248891319
 75698651748671976285978218739618932984172914319528
 56475739656758684176786979528789718163989182927419
-67554889357866599146897761125791887223681299833479
-"""
+67554889357866599146897761125791887223681299833479"""
+
+
+def small_to_big(inp_str):
+    def to_nums(inp_str):
+        out = []
+        for line in inp_str.strip().splitlines():
+            row = []
+            for c in line:
+                row.append(int(c))
+            out.append(row)
+        return out
+
+    def add_1(board):
+        nu_board = []
+        for row in board:
+            nu_row = []
+            for val in row:
+                val += 1
+                if val == 10:
+                    val = 1
+                nu_row.append(val)
+            nu_board.append(nu_row)
+        return nu_board
+
+    def add_n(board, n):
+        for _ in range(n):
+            board = add_1(board)
+        return board
+
+    big_coords = dict()
+    base = to_nums(inp_str)
+    NU_DIMS = 5
+    maxx = maxy = -1
+    for y in range(NU_DIMS):
+        for x in range(NU_DIMS):
+            offset = y + x
+            cur = add_n(deepcopy(base), offset)
+            dimy = len(cur)
+            dimx = len(cur[0])
+            for yy in range(len(cur)):
+                for xx in range(len(cur[yy])):
+                    val = cur[yy][xx]
+                    xxx = x * dimx + xx
+                    yyy = y * dimy + yy
+                    if yyy > maxy:
+                        maxy = yyy
+                    if xxx > maxx:
+                        maxx = xxx
+                    big_coords[(xxx, yyy)] = val
+    out = ""
+    for y in range(maxy + 1):
+        cur_line = "".join([str(big_coords[(x, y)]) for x in range(maxy + 1)])
+        out += cur_line + "\n"
+    return out.strip()
+
+    # nums = to_nums(ref_small)
+    # pprint(nums)
+    # pprint(add_1(nums))
+
+
+assert small_to_big(ref_small) == ref_big
 
 
 ### PART 1 ###
 
 
-def parse_input(data):
+def parse_input(data, part2=False):
+    if part2:
+        data = small_to_big(data)
     lines = data.strip().splitlines()
     print(f"{len(lines)} lines in {input_file}\n")
     line_groups = data.strip().split("\n\n")  # lines split by double newlines
@@ -171,20 +247,20 @@ def part12(data, part2=True):
         offsets = 0
         x, y = nx, ny
         while x > max_dims[0]:
-            x -= (max_dims[0] + 1)
+            x -= max_dims[0] + 1
             offsets += 1
         while y > max_dims[1]:
-            y -= (max_dims[1] + 1)
+            y -= max_dims[1] + 1
             offsets += 1
         orig_risk = nu_risk = board[(x, y)]
         nu_risk += offsets
-        nu_risk = (nu_risk - 1 ) % 9 + 1
+        nu_risk = (nu_risk - 1) % 9 + 1
         if isnan(nu_risk):
             breakpoint()
         return nu_risk
-    
+
     for i in range(5):
-        print(part2_risk((3, i*max_dims[0])))
+        print(part2_risk((3, i * max_dims[0])))
 
     while True:
         risk, (x, y) = heappop(Q)
@@ -202,7 +278,6 @@ def part12(data, part2=True):
                 if nbr_risk != float("inf"):
                     heappush(Q, (nbr_risk, nbr))
                 seen.add(nbr)
-        print(f"{(x,y, nbr_risk)=}")
 
         # pprint(Q)
 
@@ -211,7 +286,7 @@ def part12(data, part2=True):
 
 
 if __name__ == "__main__":
-    parsed = parse_input(data)
+    parsed = parse_input(data, part2=False)
     # print('mine:')
     # board, dims= to_big_board(parsed)
     # print(dims)
