@@ -1,6 +1,7 @@
 import os
 import sys
 from collections import *
+from pprint import pprint
 from copy import deepcopy
 from itertools import *
 
@@ -12,7 +13,7 @@ if "s" in sys.argv:
 try:
     with open(input_file) as f:
         data = f.read()  # entire file as string
-        lines = data.splitlines()
+        lines = data.strip().splitlines()
 except:
     print("no " + input_file)
     data, lines = "", []
@@ -20,10 +21,10 @@ except:
 
 def ans(answer):
     # store answer to clipboard
-    from distutils.spawn import find_executable
+    from shutil import which
 
-    xclip_path = find_executable("xclip")
-    if xclip_path:
+    xclip_path = which("xclip")
+    if xclip_path is not None:
         os.system(f'echo "{answer}"| {xclip_path} -selection clipboard -in')
         print("\t", answer, "| in clipboard\n")
     else:
@@ -31,11 +32,6 @@ def ans(answer):
 
 
 ############### boilerplate ###################################################
-
-line_groups = data.split("\n\n")  # lines split by double newlines
-# line_groups = [l.strip() for l in line_groups]  # remove trailing newlines
-# print(lines)
-print(f"{len(lines)} lines in {input_file}\n")
 
 
 def coords(arr2d):
@@ -70,25 +66,20 @@ P, E, R, M = print, enumerate, range, map
 ### PART 1 ###
 
 
-def line_transform(line):
-    "I run on each line of the input"
-    # split = [line.split() for line in lines]
-    # return int(line)
-    return line
+def parse_input():
+    lines = data.strip().splitlines()
+    print(f"{len(lines)} lines in {input_file}\n")
+    line_groups = data.strip().split("\n\n")  # lines split by double newlines
+    parsed = []
+    for idx, line in enumerate(lines):
+        parsed.append(line)
+    
+    pprint(parsed)
+    print(f"{len(parsed)=}")
+    return parsed
 
 
-lines = [line_transform(line) for line in lines]
-
-if len(lines):
-    l = lines[0]
-
-try:
-    nums = [int(i.strip()) for i in lines[0]]
-except:
-    pass
-
-
-def part1(data):
+def part12(data):
     tot = 0
     for idx, d in enumerate(data):
         if d:
@@ -96,14 +87,6 @@ def part1(data):
     return tot
 
 
-### PART 2 ###
-
-
-def part2(lines):
-    pass
-
-
 if __name__ == "__main__":
-    ans(part1(deepcopy(data)))
-    # p2_ans = part2(deepcopy(lines))
-    # ans(p2_ans)
+    data = parse_input()
+    part12(deepcopy(data))
