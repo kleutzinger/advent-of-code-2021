@@ -116,20 +116,20 @@ def fire(vels, goaly):
             return False, float("-inf")
 
 
-def part12(goaly):
-    pass
-
-
 if __name__ == "__main__":
     goaly = parse_input()
     best = float("-inf")
-    for x in range(100):
-        for y in range(1000):
+    seen = set()
+    for x in range(0, 200):
+        for y in range(-150, 1000):
             hit, height = fire((x, y), goaly)
             if hit:
+                seen.add((x, y))
+                print((x, y))
                 if height > best:
                     best = height
                     print(x, y, best)
+    print("part 1")
     ans(best)
-
-    part12(deepcopy(data))
+    print("part 2")
+    ans(len(seen))
