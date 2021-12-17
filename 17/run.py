@@ -31,34 +31,7 @@ def ans(answer):
         print(f"\t {answer} | (answer)\n")
 
 
-############### boilerplate ###################################################
-
-
-def coords(arr2d):
-    # return [(x0,y0), (x1, y0), ...]
-    for y in range(len(arr2d)):
-        for x in range(len(arr2d[y])):
-            yield (x, y)
-
-
-def rotate2d(l):
-    "rotate a 2d list counter_clockwise once"
-    nu = deepcopy(l)
-    return list(zip(*nu))[::-1]
-
-
-def powerset(iterable):
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-
-
-strips = lambda l: list(map(str.strip, l))
 ints = lambda l: list(map(int, l))
-commas = lambda s: s.split(",")
-comma_ints = lambda s: ints(strips(s.split(",")))
-
-L, I, D, S = list, int, dict, set
-P, E, R, M = print, enumerate, range, map
 
 ############### end of boilerplate ############################################
 
@@ -74,30 +47,26 @@ def parse_input():
     x1, x2 = ints(xs.split("=")[1].split(".."))
     y1, y2 = ints(ys.split("=")[1].split(".."))
     goal_area = set()
-    miny = float("inf")
+    min_y = float("inf")
+    max_x = float("-inf")
     for x in range(min(x1, x2), max(x1, x2) + 1):
         for y in range(min(y1, y2), max(y1, y2) + 1):
             goal_area.add((x, y))
-            miny = min(y, miny)
-    return goal_area, miny
+            min_y = min(y, min_y)
+            max_x = max(x, max_x)
+    return goal_area, max_x, min_y
 
 
-def show2d(board, dims):
-    max_x, max_y = dims
-    for y in range(max_y + 1):
-        for x in range(max_x + 1):
-            draw_cell = (x, y)
-            print(board[draw_cell], end="")
-        print("")
-
-
-def fire(vels, goaly):
-    xvel, yvel = vels
-    goal, miny = goaly
+def launch(velocities):
+    """
+    launch at some (velocity_x, velocity_y)
+    return (success_bool, highest_y_val)
+    """
+    xvel, yvel = velocities
     x = y = 0
     highest = y
     while True:
-        if (x, y) in goal:
+        if (x, y) in goal_area:
             return True, highest
         else:
             x += xvel
@@ -112,24 +81,33 @@ def fire(vels, goaly):
                 xvel += 1
             # gravity
             yvel -= 1
-        if y < miny:
+        if y < min_y:
+            # we're below the goal area
+            return False, float("-inf")
+        if x > max_x:
+            # we're past the goal area horizontally
             return False, float("-inf")
 
 
 if __name__ == "__main__":
-    goaly = parse_input()
-    best = float("-inf")
-    seen = set()
-    for x in range(0, 200):
-        for y in range(-150, 1000):
-            hit, height = fire((x, y), goaly)
+    goal_area, max_x, min_y = parse_input()
+    best_highpoint = float("-inf")
+    successful_launches = set()
+    # tried to watch the output and choose well-bounded ranges
+    # given my input of
+    #   target area: x=119..176, y=-141..-84
+    #                 max_x__/       \__min_y
+    for xvel in range(0, max_x + 1):
+        for yvel in range(min_y - 1, 1000):
+            hit, height = launch((xvel, yvel))
             if hit:
-                seen.add((x, y))
-                print((x, y))
-                if height > best:
-                    best = height
-                    print(x, y, best)
-    print("part 1")
-    ans(best)
-    print("part 2")
-    ans(len(seen))
+                successful_launches.add((xvel, yvel))
+                print("hit!", (xvel, yvel), height)
+                if height > best_highpoint:
+                    best_highpoint = height
+                    print("new record!", (xvel, yvel), best_highpoint)
+    print("(part 1) Highest point reached:")
+    ans(best_highpoint)  # 9870
+    print("(part 2) Number of distinct (xvel, yvel) that hit:")
+    ans(len(successful_launches))  # 5523
+    # runs in about 5 seconds
