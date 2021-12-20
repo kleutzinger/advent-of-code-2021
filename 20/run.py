@@ -65,28 +65,70 @@ P, E, R, M = print, enumerate, range, map
 
 ### PART 1 ###
 
+decoder = []
+
 
 def parse_input():
     lines = data.strip().splitlines()
     print(f"{len(lines)} lines in {input_file}\n")
-    line_groups = data.strip().split("\n\n")  # lines split by double newlines
-    parsed = []
-    for idx, line in enumerate(lines):
-        parsed.append(line)
-    
-    pprint(parsed)
-    print(f"{len(parsed)=}")
-    return parsed
+    global decoder
+    decoder = [i == "#" for i in lines[0]]
+    print(decoder)
+    pic = defaultdict(bool)
+    for yidx, line in enumerate(lines[2:]):
+        for xidx, char in enumerate(line):
+            pic[(xidx, yidx)] = char == "#"
+    return pic
 
 
-def part12(data):
-    tot = 0
-    for idx, d in enumerate(data):
-        if d:
-            tot += 1
-    return tot
+def bounding_box(pic):
+    minx = miny = float("inf")
+    maxx = maxy = float("-inf")
+    for (x, y), val in pic.items():
+        if val:
+            minx = min(x, minx)
+            maxx = max(x, maxx)
+            miny = min(y, miny)
+            maxy = max(y, maxy)
+    return minx - 2, miny - 2, maxx + 2, maxy + 2
+
+
+def round(pic):
+    nu_pic = defaultdict(bool)
+    min_x, min_y, max_x, max_y = bounding_box(pic)
+    for y in range(min_y, max_y + 1):
+        for x in range(min_x, max_x + 1):
+            sofar = ""
+            for dy, dx in sorted(product((-1, 0, 1), (-1, 0, 1))):
+                nx, ny = x + dx, y + dy
+                sofar += f"{int(pic[(nx, ny)])}"
+            nu_pic[(x, y)] = decoder[int(sofar, 2)]
+    return nu_pic
+
+
+def show2d(pic):
+    min_x, min_y, max_x, max_y = bounding_box(pic)
+    for y in range(min_y, max_y + 1):
+        for x in range(min_x, max_x + 1):
+            print("#" if pic[(x, y)] else ".", end="")
+        print()
+
+
+# too high: 6581
+# too high: 6006
+def alight(pic):
+    return sum(pic.values())
+
+
+def part12(pic):
+    for g in range(0, 3):
+        print("-----")
+        print(f"{g=}")
+        show2d(pic)
+        print(alight(pic))
+        pic = round(pic)
 
 
 if __name__ == "__main__":
-    data = parse_input()
-    part12(deepcopy(data))
+    pic = parse_input()
+    part12(deepcopy(pic))
